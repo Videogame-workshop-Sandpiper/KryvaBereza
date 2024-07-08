@@ -1,0 +1,9 @@
+barrier ▒ 0 0 170
+grass ~ 0 80 0
+path . 100 90 0
+player @ 80 0 0
+imp e 0 0 210
+boulder ▄ 60 60 60
+bird ѵ 0 0 60
+concrete_wall ▓ 50 50 55
+concrete_floor ▓ 20 20 25

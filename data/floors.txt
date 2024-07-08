@@ -1,0 +1,4 @@
+_ grass grass
+_ path path
+_ concrete_floor concrete_floor
+_ barrier barrier

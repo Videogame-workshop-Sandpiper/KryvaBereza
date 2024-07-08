@@ -1,0 +1,2 @@
+_ concrete_wall concrete_wall concrete_floor
+_ barrier barrier noth
