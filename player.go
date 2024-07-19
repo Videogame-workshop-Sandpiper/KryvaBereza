@@ -6,10 +6,22 @@ func MovePlayer(v Vector3) {
 	AttemptMove(v)
 }
 
-//Check for walls before moving
+//Move player and camera
 func AttemptMove(v Vector3) {
-	if !OutOfBounds(NewV3(GameData.camera.x+v.x, GameData.camera.y+v.y, GameData.camera.z+v.z)) && GameData.world[GameData.camera.x+v.x][GameData.camera.y+v.y][0].mob == 0 && GameData.world[GameData.camera.x+v.x][GameData.camera.y+v.y][0].wall.wtype == 0 {
-		GameData.camera = NewV3(GameData.camera.x+v.x, GameData.camera.y+v.y, GameData.camera.z+v.z)
-		GameData.mobs[1].AttemptMove(v)
+	GameData.mobs[1].AttemptMove(RotateFromCamera(v))
+	GameData.camera = GameData.mobs[1].pos
+}
+
+//Rotates player movement, according to the camera direction
+func RotateFromCamera(v Vector3) Vector3 {
+	switch GameData.cameraDir {
+	case 1:
+		return NewV3(v.y, -v.x, v.z)
+	case 2:
+		return NewV3(-v.x, -v.y, v.z)
+	case 3:
+		return NewV3(-v.y, v.x, v.z)
+	default:
+		return v
 	}
 }

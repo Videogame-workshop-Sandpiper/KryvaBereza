@@ -2,3 +2,5 @@ _ grass grass
 _ path path
 _ concrete_floor concrete_floor
 _ barrier barrier
+_ tile_roof tile_roof
+_ leaves_floor leaves_floor

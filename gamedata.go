@@ -3,21 +3,21 @@ package main
 import "math/rand"
 
 const (
-	worldSize        int = 500
-	worldHeight      int = 10
-	screenAreaWidth  int = 91
-	screenAreaHeight int = 41
+	worldSize        int = 500 //Width and length of world
+	worldHeight      int = 12  //Height of world
+	screenAreaWidth  int = 100 //Width of game screen
+	screenAreaHeight int = 30  //Height of game screen
 )
 
 var GameData struct {
 	world      [worldSize][worldSize][worldHeight]Tile //World as a matrix
 	screenArea [screenAreaWidth][screenAreaHeight]Tile //Tiles, visible by camera
-	mobs       [10]Mob
-
+	mobs       [10]Mob                                 //Array of mobs
+	//Arrays of types of tile elements
 	wallTypes  [20]WallType
 	mobTypes   [20]MobType
 	floorTypes [20]FloorType
-
+	//Maps, needed for a quicker access to a type
 	wallTypeMap  map[string]WallType
 	mobTypeMap   map[string]MobType
 	floorTypeMap map[string]FloorType
@@ -25,155 +25,158 @@ var GameData struct {
 	worldSeed int     //Random world generation seed
 	camera    Vector3 //Position of camera
 	gameTime  int     //Ingame timer
+	cameraDir int     //Camera direction. North, east, south, west
 }
 
 //World measurment unit
 type Tile struct {
 	floor Floor
-	mob   int
+	mob   int //Mob's index in an array
 	wall  Wall
 }
 
+//I have made separate Init functions in case i want to have some script playing when object is being initialized
+//Tile initialization function
 func (t *Tile) Init(floor Floor, mob int, wall Wall) {
 	t.floor = floor
 	t.mob = mob
 	t.wall = wall
 }
 
+//Wall parameters
 type WallType struct {
 	name    string
 	tile    int
-	tileTop int
-	index   int
+	tileTop int //floor type, that will appear on top of said wall due=ring wall generation
+	index   int //index in type array
 }
 
+//Wall data
 type Wall struct {
-	wtype int
+	wtype WallType
 	pos   Vector3
-	onTop bool
+	onTop bool //Wheteher or not this wall is on top of another wall. No implementation yet
 }
 
-func (w *Wall) Init(wtype int, pos Vector3) {
+//Wall init function
+func (w *Wall) Init(wtype WallType, pos Vector3) {
 	w.wtype = wtype
 	w.pos = pos
-	if (pos.z+1) < worldHeight && GameData.world[pos.x][pos.y][pos.z+1].wall.wtype == 0 {
+	//Set if this wall is on top of another wall
+	if (pos.z+1) < worldHeight && GameData.world[pos.x][pos.y][pos.z+1].wall.wtype.index == 0 {
 		w.onTop = true
 	}
-	if (pos.z-1) >= 0 && GameData.world[pos.x][pos.y][pos.z-1].wall.wtype != 0 {
+	//Set if the wall below this is on top
+	if (pos.z-1) >= 0 && GameData.world[pos.x][pos.y][pos.z-1].wall.wtype.index != 0 {
 		GameData.world[pos.x][pos.y][pos.z-1].wall.onTop = false
 	}
-	if (pos.z+1) < worldHeight && GameData.world[pos.x][pos.y][pos.z+1].floor.ftype == 0 {
-		GameData.world[pos.x][pos.y][pos.z+1].floor.Init(GameData.floorTypes[GameData.wallTypes[w.wtype].tileTop].index, NewV3(pos.x, pos.y, pos.z+1))
+	//There always should be floor over wall
+	if (pos.z+1) < worldHeight && GameData.world[pos.x][pos.y][pos.z+1].floor.ftype.index == 0 {
+		GameData.world[pos.x][pos.y][pos.z+1].floor.Init(GameData.floorTypes[wtype.tileTop], NewV3(pos.x, pos.y, pos.z+1))
 	}
 }
 
+//Floor parameters
 type FloorType struct {
 	name  string
 	tile  int
-	index int
+	index int //index in type array
 }
 
+//Floor data
 type Floor struct {
-	ftype     int
+	ftype     FloorType
 	pos       Vector3
-	underWall bool
+	underWall bool //Is this floor located under a wall. No implementation yet
 }
 
-func (f *Floor) Init(ftype int, pos Vector3) {
+func (f *Floor) Init(ftype FloorType, pos Vector3) {
 	f.ftype = ftype
 	f.pos = pos
-	if GameData.world[pos.x][pos.y][pos.z].wall.wtype != 0 {
+	//Checks if it's under a wall
+	if GameData.world[pos.x][pos.y][pos.z].wall.wtype.index != 0 {
 		f.underWall = true
 	}
 }
 
+//Creature parameters
 type MobType struct {
 	name   string
 	health int
 	tile   int
-	index  int
+	index  int //index in type array
 }
 
+//Creature data
 type Mob struct {
-	mtype  int
+	mtype  MobType
 	health int
 	pos    Vector3
-	index  int
+	index  int //index in array
 }
 
-func (m *Mob) Init(mtype int, pos Vector3, index int) {
+//Mob init function
+func (m *Mob) Init(mtype MobType, pos Vector3, index int) {
 	m.mtype = mtype
-	m.health = GameData.mobTypes[mtype].health
+	m.health = GameData.mobTypes[mtype.index].health
 	m.pos = pos
 	m.index = index
+
+	GameData.world[pos.x][pos.y][pos.z].mob = index
 }
 
-// Check for walls before moving
+// Attempt moving
 func (m *Mob) AttemptMove(v Vector3) {
-	if !OutOfBounds(NewV3(m.pos.x+v.x, m.pos.y+v.y, m.pos.z+v.z)) && GameData.world[m.pos.x+v.x][m.pos.y+v.y][0].mob == 0 && GameData.world[m.pos.x+v.x][m.pos.y+v.y][0].wall.wtype == 0 {
+	//Applies gravity if no floor underneath
+	if (!OutOfBounds(NewV3(m.pos.x+v.x, m.pos.y+v.y, m.pos.z+v.z)) && GameData.world[m.pos.x+v.x][m.pos.y+v.y][m.pos.z].floor.ftype.index == 0) || GameData.world[m.pos.x][m.pos.y][m.pos.z].floor.ftype.index == 0 {
+		v.z = -1
+	}
+	//Nullifies vectors if there are obstacles
+	if OutOfBounds(NewV3(m.pos.x+v.x, m.pos.y+v.y, m.pos.z)) || GameData.world[m.pos.x+v.x][m.pos.y+v.y][m.pos.z].mob != 0 || GameData.world[m.pos.x+v.x][m.pos.y+v.y][m.pos.z].wall.wtype.index != 0 {
+		v = NewV3(0, 0, v.z)
+	}
+	//Moves mob if neither of vectors are zero
+	if !(v.x == 0 && v.y == 0 && v.z == 0) {
 		GameData.world[m.pos.x][m.pos.y][m.pos.z].mob = 0
 		m.pos = NewV3(m.pos.x+v.x, m.pos.y+v.y, m.pos.z+v.z)
 		GameData.world[m.pos.x][m.pos.y][m.pos.z].mob = m.index
 	}
 }
 
-func BuildWall(v Vector3, height int) {
-	for i := range height {
-		GameData.world[v.x][v.y][v.z+i].wall.Init(GameData.wallTypeMap["concrete_wall"].index, NewV3(v.x, v.y, v.z+i))
-	}
-}
-
-//Fills world with tiles
-func FillWorld() {
-	rand.Seed(int64(GameData.worldSeed))
-	for y := 0; y < worldSize; y++ {
-		for x := 0; x < worldSize; x++ {
-			if rand.Intn(5) == 1 {
-				GameData.world[x][y][0].floor.Init(GameData.floorTypeMap["path"].index, NewV3(x, y, 0))
-			} else {
-				GameData.world[x][y][0].floor.Init(GameData.floorTypeMap["grass"].index, NewV3(x, y, 0))
-			}
-			GameData.world[x][y][0].mob = Graphic.tileMap["noth"]
-			if rand.Intn(121) == 1 {
-				BuildWall(NewV3(x, y, 0), 3)
-			} else {
-				GameData.world[x][y][0].wall.Init(0, NewV3(0, 0, 0))
-			}
-			if x == 400 || y == 220 {
-				if rand.Intn(20) == 1 {
-					BuildWall(NewV3(x, y, 2), 3)
-				} else {
-					BuildWall(NewV3(x, y, 0), 5)
-				}
-			}
-		}
-	}
-
-	GameData.camera.Init(330, 320, 0)
-	GameData.mobs[1].Init(GameData.mobTypeMap["player"].index, NewV3(330, 320, 0), 1)
-	GameData.mobs[2].Init(GameData.mobTypeMap["imp"].index, NewV3(330, 330, 0), 2)
-}
-
 //Fills screen area with tiles, currently in camera's view
 func UpdateScreenArea() {
 	for y := 0; y < screenAreaHeight; y++ {
 		for x := 0; x < screenAreaWidth; x++ {
-			if !OutOfBounds(WorldPosition(NewV2(x, y))) {
-				var index int = worldHeight - 1
-				for index > 0 && (OutOfBounds(WorldPosition(NewV2(x, y+index))) || TileEmpty(NewV3(WorldPosition(NewV2(x, y+index)).x, WorldPosition(NewV2(x, y+index)).y, index))) {
-					index--
-				}
-				GameData.screenArea[x][y] = GameData.world[WorldPosition(NewV2(x, y+index)).x][WorldPosition(NewV2(x, y+index)).y][index]
+			//Finds highest tile to be drawn in that part of the screen
+			var Y int = y - GameData.mobs[1].pos.z
+			var index int = worldHeight - 1
+			for index > 0 && (OutOfBounds(WorldPosition(NewV2(x, Y+index))) || TileEmpty(NewV3(WorldPosition(NewV2(x, Y+index)).x, WorldPosition(NewV2(x, Y+index)).y, index))) {
+				index--
+			}
+			//Draws barrier if tile appears to be out of screen
+			if !OutOfBounds(WorldPosition(NewV2(x, Y+index))) {
+				GameData.screenArea[x][y] = GameData.world[WorldPosition(NewV2(x, Y+index)).x][WorldPosition(NewV2(x, Y+index)).y][index]
 			} else {
-				GameData.screenArea[x][y].wall.Init(GameData.wallTypeMap["barrier"].index, NewV3(x, y, 0))
+				GameData.screenArea[x][y].wall.Init(GameData.wallTypeMap["barrier"], NewV3(x, y, 0))
 			}
 		}
 	}
 }
 
-//Returns screen position in a world
+//Returns screen position in a world depending on a camera rotation
 func WorldPosition(v Vector2) Vector3 {
-	return NewV3(GameData.camera.x-(screenAreaWidth/2)+v.x, GameData.camera.y-(screenAreaHeight/2)+v.y, 0)
+	var offsetx int = ((screenAreaWidth - screenAreaHeight) / 2)
+	var offsety int = (screenAreaHeight - ((screenAreaWidth - screenAreaHeight) / 2))
+	switch GameData.cameraDir {
+	case 1:
+		return NewV3(GameData.camera.x-(screenAreaWidth/2)+v.y+offsetx, GameData.camera.y+(screenAreaHeight/2)+(screenAreaHeight-v.x)-offsety, 0)
+	case 2:
+		return NewV3(GameData.camera.x-(screenAreaWidth/2)+(screenAreaWidth-v.x), GameData.camera.y-(screenAreaHeight/2)+(screenAreaHeight-v.y), 0)
+	case 3:
+		return NewV3(GameData.camera.x+(screenAreaWidth/2)-v.y-offsetx, GameData.camera.y-(screenAreaHeight/2)+v.x-screenAreaHeight+offsety, 0)
+	default:
+		return NewV3(GameData.camera.x-(screenAreaWidth/2)+v.x, GameData.camera.y-(screenAreaHeight/2)+v.y, 0)
+	}
 }
 
 //Checks if coordinates are out of worlds bounds
@@ -185,18 +188,21 @@ func OutOfBounds(v Vector3) bool {
 	}
 }
 
+//Check if tile is empty
 func TileEmpty(v Vector3) bool {
-	if GameData.world[v.x][v.y][v.z].floor.ftype == 0 && GameData.world[v.x][v.y][v.z].wall.wtype == 0 && GameData.world[v.x][v.y][v.z].mob == 0 {
+	if GameData.world[v.x][v.y][v.z].floor.ftype.index == 0 && GameData.world[v.x][v.y][v.z].wall.wtype.index == 0 && GameData.world[v.x][v.y][v.z].mob == 0 {
 		return true
 	} else {
 		return false
 	}
 }
 
+//Increment ingame timer and do all time-related actions
 func ProceedTime() {
 	GameData.gameTime++
+	//Creature behaviour
 	for i := range GameData.mobs {
-		if GameData.mobs[i].health != 0 && GameData.mobTypes[GameData.mobs[i].mtype].name != "player" {
+		if GameData.mobs[i].health != 0 && GameData.mobs[i].mtype.name != "player" {
 			GameData.mobs[i].AttemptMove(NewV3(1-rand.Intn(3), 1-rand.Intn(3), 0))
 		}
 	}

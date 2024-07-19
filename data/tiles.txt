@@ -1,4 +1,4 @@
-barrier ▒ 0 0 170
+barrier ▒ 0 0 170 255 255 255
 grass ~ 0 80 0
 path . 100 90 0
 player @ 80 0 0
@@ -7,3 +7,16 @@ boulder ▄ 60 60 60
 bird ѵ 0 0 60
 concrete_wall ▓ 50 50 55
 concrete_floor ▓ 20 20 25
+tile_roof ≈ 47 45 43 37 35 33
+cross † 205 133 63
+tree_bark ▓ 76 47 39
+leaves ▓ 0 100 0
+leaves_floor ▓ 0 70 0
+tree_root ̭ 76 47 39
+rock . 60 60 60
+stick ̱ 76 47 39
+key ˾ 60 60 60
+clothes_hanger_bottom ⌡ 50 50 50
+clothes_hanger_top ╤ 50 50 50
+player_bottom ∏ 80 0 0
+player_middle ▓ 80 0 0

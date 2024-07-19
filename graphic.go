@@ -8,7 +8,7 @@ import (
 const (
 	fontPath    = "./data/NotoSansMono.ttf" //Path to ttf file
 	fontSize    = 16                        //Font size
-	tileSetSize = 20                        //Size of tileset
+	tileSetSize = 50                        //Size of tileset
 )
 
 var Graphic struct {
@@ -22,7 +22,18 @@ var Graphic struct {
 }
 
 // Prerender tile
-func PrerenderTile(r string, color sdl.Color) *sdl.Surface {
+func PrerenderTile(r string, color sdl.Color, bgcolor sdl.Color) *sdl.Surface {
+	var text *sdl.Surface
+	text, err := Graphic.font.RenderUTF8Shaded(string(r), color, bgcolor)
+	//text, err := Graphic.font.RenderUTF8Blended(string(r), color)
+	if err != nil {
+		return nil
+	}
+	return text
+}
+
+// Prerender tile without background
+func PrerenderTileBlended(r string, color sdl.Color) *sdl.Surface {
 	var text *sdl.Surface
 	text, err := Graphic.font.RenderUTF8Blended(string(r), color)
 	if err != nil {
@@ -35,14 +46,15 @@ func PrerenderTile(r string, color sdl.Color) *sdl.Surface {
 func UpdateGameScreen() {
 	var text *sdl.Surface
 	Graphic.surface.FillRect(nil, sdl.MapRGB(Graphic.surface.Format, 0, 0, 0))
-	for y := 0; y < screenAreaHeight; y++ {
-		for x := 0; x < screenAreaWidth; x++ {
-			if GameData.screenArea[x][y].wall.wtype != 0 {
-				text = Graphic.tiles[GameData.wallTypes[GameData.screenArea[x][y].wall.wtype].tile]
+	for y := screenAreaHeight - 1; y >= 0; y-- {
+		for x := screenAreaWidth - 1; x >= 0; x-- {
+			//Tile hierarchy: wall > creature > floor
+			if GameData.screenArea[x][y].wall.wtype.index != 0 {
+				text = Graphic.tiles[GameData.screenArea[x][y].wall.wtype.tile]
 			} else if GameData.screenArea[x][y].mob != 0 {
-				text = Graphic.tiles[GameData.mobTypes[GameData.mobs[GameData.screenArea[x][y].mob].mtype].tile]
+				text = Graphic.tiles[GameData.mobTypes[GameData.mobs[GameData.screenArea[x][y].mob].mtype.index].tile]
 			} else {
-				text = Graphic.tiles[GameData.floorTypes[GameData.screenArea[x][y].floor.ftype].tile]
+				text = Graphic.tiles[GameData.floorTypes[GameData.screenArea[x][y].floor.ftype.index].tile]
 			}
 			text.Blit(nil, Graphic.surface, &sdl.Rect{X: int32(x * Graphic.charSize.x), Y: int32(y * Graphic.charSize.y), W: 0, H: 0})
 		}

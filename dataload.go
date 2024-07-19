@@ -8,6 +8,7 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+// Loads all the necessary data
 func LoadDataFiles() {
 	CreateTiles()
 	CreateFloorTypes()
@@ -15,11 +16,11 @@ func LoadDataFiles() {
 	CreateMobTypes()
 }
 
-// Creates a tileset
+// Loads tileset
 func CreateTiles() {
 	Graphic.tileMap = make(map[string]int)
 
-	Graphic.tiles[0] = PrerenderTile(" ", sdl.Color{R: 0, G: 0, B: 0})
+	Graphic.tiles[0] = PrerenderTile(" ", sdl.Color{R: 0, G: 0, B: 0}, sdl.Color{R: 0, G: 0, B: 0})
 	Graphic.tileMap["noth"] = 0
 	file, err := os.Open("data/tiles.txt")
 	if err != nil {
@@ -30,12 +31,18 @@ func CreateTiles() {
 	var i int = 1
 	for scanner.Scan() {
 		line := strings.Fields(scanner.Text())
-		Graphic.tiles[i] = PrerenderTile(line[1], sdl.Color{R: StrToInt8(line[2]), G: StrToInt8(line[3]), B: StrToInt8(line[4])})
+		//Checks if tile has background color
+		if len(line) == 5 {
+			Graphic.tiles[i] = PrerenderTile(line[1], sdl.Color{R: StrToInt8(line[2]), G: StrToInt8(line[3]), B: StrToInt8(line[4])}, sdl.Color{R: 0, G: 0, B: 0})
+		} else {
+			Graphic.tiles[i] = PrerenderTile(line[1], sdl.Color{R: StrToInt8(line[2]), G: StrToInt8(line[3]), B: StrToInt8(line[4])}, sdl.Color{R: StrToInt8(line[5]), G: StrToInt8(line[6]), B: StrToInt8(line[7])})
+		}
 		Graphic.tileMap[line[0]] = i
 		i++
 	}
 }
 
+// Loads wall data
 func CreateWallTypes() {
 	GameData.wallTypeMap = make(map[string]WallType)
 
@@ -57,6 +64,7 @@ func CreateWallTypes() {
 	}
 }
 
+// Loads floor data
 func CreateFloorTypes() {
 	GameData.floorTypeMap = make(map[string]FloorType)
 
@@ -77,6 +85,7 @@ func CreateFloorTypes() {
 	}
 }
 
+// Loads creature data
 func CreateMobTypes() {
 	GameData.mobTypeMap = make(map[string]MobType)
 

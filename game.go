@@ -39,9 +39,9 @@ func run() (err error) {
 	running := true
 	var tick = 0
 	//windowWidth, windowHeight := Graphic.window.GetSize()
-	Graphic.charSize.x, Graphic.charSize.y, _ = Graphic.font.SizeUTF8("a")
+	Graphic.charSize.x, Graphic.charSize.y, _ = Graphic.font.SizeUTF8("╬")
+	Graphic.charSize.x -= 1
 	Graphic.charSize.y -= 5
-	Graphic.charSize.y -= 1
 	//rows = int(windowHeight) / Graphic.charSize.y
 	//cols = int(windowWidth) / Graphic.charSize.x
 
@@ -50,6 +50,7 @@ func run() (err error) {
 	FillWorld()
 
 	for running {
+		// Game checks every 8 frames if button is pressed
 		if tick == 8 {
 			tick = 0
 		} else {
@@ -64,7 +65,9 @@ func run() (err error) {
 			}
 		}
 		start := time.Now()
+		//Check which keyboard key was pressed
 		if tick == 0 {
+			//Player movement
 			if keyst[sdl.SCANCODE_RIGHT] != 0 {
 				MovePlayer(NewV3(1, 0, 0))
 			}
@@ -77,12 +80,24 @@ func run() (err error) {
 			if keyst[sdl.SCANCODE_DOWN] != 0 {
 				MovePlayer(NewV3(0, 1, 0))
 			}
+			//Wait
 			if keyst[sdl.SCANCODE_SPACE] != 0 {
-				ProceedTime()
+				MovePlayer(NewV3(0, 0, 0))
+			}
+			//Turn camera
+			if keyst[sdl.SCANCODE_P] != 0 {
+				GameData.cameraDir++
+				if GameData.cameraDir == 4 {
+					GameData.cameraDir = 0
+				}
+			}
+			//Regenerate world
+			if keyst[sdl.SCANCODE_R] != 0 {
+				GenerateWorld()
 			}
 		}
 		UpdateGameScreen()
-
+		//FPS counter
 		fps := 1000000 / time.Since(start).Microseconds()
 		Graphic.window.SetTitle("Kryva Bereza vPre-anything FPS:" + strconv.FormatInt(int64(int(fps)), 10))
 

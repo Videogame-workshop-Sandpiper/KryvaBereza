@@ -1,2 +1,4 @@
 _ concrete_wall concrete_wall concrete_floor
-_ barrier barrier noth
+_ barrier barrier barrier
+_ tree_stump tree_bark tile_roof
+_ leaves leaves leaves_floor

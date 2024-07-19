@@ -8,19 +8,44 @@ import (
 
 // Displays UI
 func UIDisplayStats() {
-	UIDisplayText(fmt.Sprintf("%s%d%s%d", "X: ", GameData.camera.x, " Y: ", GameData.camera.y), 1)
+	UIDisplayText(fmt.Sprintf("%s%d%s%d%s%d", "X: ", GameData.camera.x, " Y: ", GameData.camera.y, " Z: ", GameData.camera.z), 1)
 	UIDisplayText(fmt.Sprintf("%s%d", "Seed: ", GameData.worldSeed), 2)
 	UIDisplayText(fmt.Sprintf("%s%d", "Time: ", GameData.gameTime), 3)
+
+	UIDrawCompass(screenAreaHeight - 5)
 }
 
 // Displays text
 func UIDisplaySymbol(a string, col int, row int) {
-	PrerenderTile(a, sdl.Color{R: 255, G: 255, B: 255}).Blit(nil, Graphic.surface, &sdl.Rect{X: int32((screenAreaWidth + col) * Graphic.charSize.x), Y: int32(row * Graphic.charSize.y), W: 0, H: 0})
+	PrerenderTileBlended(a, sdl.Color{R: 255, G: 255, B: 255}).Blit(nil, Graphic.surface, &sdl.Rect{X: int32((screenAreaWidth + col) * Graphic.charSize.x), Y: int32(row * Graphic.charSize.y), W: 0, H: 0})
 }
 
 // Diplays rune
 func UIDisplayText(a string, row int) {
-	for i := range a {
-		UIDisplaySymbol(string([]rune(a)[i]), i, row)
+	var I int = 0
+	for i, c := range a {
+		UIDisplaySymbol(string(c), I, row)
+		if i == -1 {
+			i = -1
+		}
+		I++
 	}
+}
+
+// Display compass, that shows camera's dierction
+func UIDrawCompass(row int) {
+	UIDisplayText("  N ", row)
+	UIDisplayText(" ┌─┐", row+1)
+	switch GameData.cameraDir {
+	case 0:
+		UIDisplayText("W│▲│E", row+2)
+	case 1:
+		UIDisplayText("W│►│E", row+2)
+	case 2:
+		UIDisplayText("W│▼│E", row+2)
+	case 3:
+		UIDisplayText("W│◄│E", row+2)
+	}
+	UIDisplayText(" └─┘", row+3)
+	UIDisplayText("  S ", row+4)
 }
