@@ -26,6 +26,7 @@ func CreateTiles() {
 	if err != nil {
 		return
 	}
+	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 	var i int = 1
@@ -50,6 +51,7 @@ func CreateWallTypes() {
 	if err != nil {
 		return
 	}
+	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 	var i int = 1
@@ -72,6 +74,7 @@ func CreateFloorTypes() {
 	if err != nil {
 		return
 	}
+	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 	var i int = 1
@@ -93,6 +96,7 @@ func CreateMobTypes() {
 	if err != nil {
 		return
 	}
+	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 	var i int = 1

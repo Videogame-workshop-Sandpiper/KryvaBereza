@@ -10,6 +10,8 @@ import (
 	"github.com/veandco/go-sdl2/ttf"
 )
 
+const FPS_CAP = 30
+
 // Main cycle
 func run() (err error) {
 
@@ -48,14 +50,9 @@ func run() (err error) {
 	LoadDataFiles()
 	GameData.worldSeed = rand.Int()
 	FillWorld()
-
+	var frameDelay uint32 = 1000 / FPS_CAP
 	for running {
 		// Game checks every 8 frames if button is pressed
-		if tick == 8 {
-			tick = 0
-		} else {
-			tick++
-		}
 		UpdateScreenArea()
 		var keyst = sdl.GetKeyboardState()
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
@@ -97,7 +94,10 @@ func run() (err error) {
 			}
 		}
 		UpdateGameScreen()
-		//FPS counter
+		//FPS handler
+		if uint32(time.Since(start).Milliseconds()) < frameDelay {
+			sdl.Delay(frameDelay - uint32(time.Since(start).Milliseconds()))
+		}
 		fps := 1000000 / time.Since(start).Microseconds()
 		Graphic.window.SetTitle("Kryva Bereza vPre-anything FPS:" + strconv.FormatInt(int64(int(fps)), 10))
 
