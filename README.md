@@ -1,14 +1,16 @@
-Controls:
-Arrows to move
-Spacebar to skip turn
-R to generate new world in runtime
-P to rotate camera
-Finger to stick up your droopy asshole
+# Instalation
+1. Download zip file of the game on github
+2. Unpack it (duh)
+3. Run `build.bat` if you are on Windows or `build.sh` if you are on Linux
+4. Run created executable
 
-Recent changes:
--Added comments
--Added gravity
--Added trees
--Added camera rotation
--Added runtime world regeneration
--Optimized tile element type maps
+# Controls:
+- `Arrows` to move
+- `Spacebar` to skip turn
+- `R` to generate new world in runtime
+- `P` to rotate camera
+- `Finger` to stick up your droopy asshole
+
+# Info
+- [Contributing rules](./docs/CONTRIBUTING.md)
+- [Documentation](./docs/DOCUMENTATION.md)
