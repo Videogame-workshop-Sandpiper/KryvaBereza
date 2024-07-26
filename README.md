@@ -10,3 +10,5 @@
 - `R` to generate new world in runtime
 - `P` to rotate camera
 - `Finger` to stick up your droopy asshole
+
+[Documentation](./DOCUMENTATION.md)
