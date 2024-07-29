@@ -57,8 +57,7 @@ func CreateWallTypes() {
 		line := strings.Fields(scanner.Text())
 		GameData.wallTypes[i].name = line[1]
 		GameData.wallTypes[i].tile = Graphic.tileMap[line[2]]
-		GameData.wallTypes[i].tileTop = GameData.floorTypeMap[line[3]].index
-		GameData.wallTypes[i].index = i
+		GameData.wallTypes[i].tileTop = GameData.floorTypeMap[line[3]]
 		GameData.wallTypeMap[line[1]] = GameData.wallTypes[i]
 		i++
 	}
@@ -79,7 +78,6 @@ func CreateFloorTypes() {
 		line := strings.Fields(scanner.Text())
 		GameData.floorTypes[i].name = line[1]
 		GameData.floorTypes[i].tile = Graphic.tileMap[line[2]]
-		GameData.floorTypes[i].index = i
 		GameData.floorTypeMap[line[1]] = GameData.floorTypes[i]
 		i++
 	}
@@ -101,7 +99,6 @@ func CreateMobTypes() {
 		GameData.mobTypes[i].name = line[1]
 		GameData.mobTypes[i].tile = Graphic.tileMap[line[3]]
 		GameData.mobTypes[i].health = StrToInt(line[2])
-		GameData.mobTypes[i].index = i
 		GameData.mobTypeMap[line[1]] = GameData.mobTypes[i]
 		i++
 	}

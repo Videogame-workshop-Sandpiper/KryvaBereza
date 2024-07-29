@@ -49,16 +49,17 @@ func UpdateGameScreen() {
 	for y := screenAreaHeight - 1; y >= 0; y-- {
 		for x := screenAreaWidth - 1; x >= 0; x-- {
 			//Tile hierarchy: wall > creature > floor
-			if GameData.screenArea[x][y].wall.wtype.index != 0 {
+			if GameData.screenArea[x][y].wall.wtype.name != "" {
 				text = Graphic.tiles[GameData.screenArea[x][y].wall.wtype.tile]
 			} else if GameData.screenArea[x][y].mob != 0 {
-				text = Graphic.tiles[GameData.mobTypes[GameData.mobs[GameData.screenArea[x][y].mob].mtype.index].tile]
+				text = Graphic.tiles[GameData.mobTypeMap[GameData.mobs[GameData.screenArea[x][y].mob].mtype.name].tile]
 			} else {
-				text = Graphic.tiles[GameData.floorTypes[GameData.screenArea[x][y].floor.ftype.index].tile]
+				text = Graphic.tiles[GameData.screenArea[x][y].floor.ftype.tile]
 			}
 			text.Blit(nil, Graphic.surface, &sdl.Rect{X: int32(x * Graphic.charSize.x), Y: int32(y * Graphic.charSize.y), W: 0, H: 0})
 		}
 	}
 	UIDisplayStats()
 	Graphic.window.UpdateSurface()
+	Graphic.surface.Free()
 }

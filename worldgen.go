@@ -71,6 +71,7 @@ func FillWorld() {
 		}
 	}
 	SpawnMobs()
+	print(GameData.world[250][250][5].floor.ftype.name)
 }
 
 func SpawnMobs() {

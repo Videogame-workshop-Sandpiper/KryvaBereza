@@ -47,8 +47,7 @@ func (t *Tile) Init(floor Floor, mob int, wall Wall) {
 type WallType struct {
 	name    string
 	tile    int
-	tileTop int //floor type, that will appear on top of said wall due=ring wall generation
-	index   int //index in type array
+	tileTop FloorType //floor type, that will appear on top of said wall due=ring wall generation
 }
 
 //Wall data
@@ -63,24 +62,23 @@ func (w *Wall) Init(wtype WallType, pos Vector3) {
 	w.wtype = wtype
 	w.pos = pos
 	//Set if this wall is on top of another wall
-	if (pos.z+1) < worldHeight && GameData.world[pos.x][pos.y][pos.z+1].wall.wtype.index == 0 {
+	if (pos.z+1) < worldHeight && GameData.world[pos.x][pos.y][pos.z+1].wall.wtype.name == "" {
 		w.onTop = true
 	}
 	//Set if the wall below this is on top
-	if (pos.z-1) >= 0 && GameData.world[pos.x][pos.y][pos.z-1].wall.wtype.index != 0 {
+	if (pos.z-1) >= 0 && GameData.world[pos.x][pos.y][pos.z-1].wall.wtype.name != "" {
 		GameData.world[pos.x][pos.y][pos.z-1].wall.onTop = false
 	}
 	//There always should be floor over wall
-	if (pos.z+1) < worldHeight && GameData.world[pos.x][pos.y][pos.z+1].floor.ftype.index == 0 {
-		GameData.world[pos.x][pos.y][pos.z+1].floor.Init(GameData.floorTypes[wtype.tileTop], NewV3(pos.x, pos.y, pos.z+1))
+	if (pos.z+1) < worldHeight && GameData.world[pos.x][pos.y][pos.z+1].floor.ftype.name == "" {
+		GameData.world[pos.x][pos.y][pos.z+1].floor.Init(wtype.tileTop, NewV3(pos.x, pos.y, pos.z+1))
 	}
 }
 
 //Floor parameters
 type FloorType struct {
-	name  string
-	tile  int
-	index int //index in type array
+	name string
+	tile int
 }
 
 //Floor data
@@ -94,7 +92,7 @@ func (f *Floor) Init(ftype FloorType, pos Vector3) {
 	f.ftype = ftype
 	f.pos = pos
 	//Checks if it's under a wall
-	if GameData.world[pos.x][pos.y][pos.z].wall.wtype.index != 0 {
+	if GameData.world[pos.x][pos.y][pos.z].wall.wtype.name != "" {
 		f.underWall = true
 	}
 }
@@ -104,7 +102,6 @@ type MobType struct {
 	name   string
 	health int
 	tile   int
-	index  int //index in type array
 }
 
 //Creature data
@@ -118,7 +115,7 @@ type Mob struct {
 //Mob init function
 func (m *Mob) Init(mtype MobType, pos Vector3, index int) {
 	m.mtype = mtype
-	m.health = GameData.mobTypes[mtype.index].health
+	m.health = GameData.mobTypeMap[mtype.name].health
 	m.pos = pos
 	m.index = index
 
@@ -128,11 +125,11 @@ func (m *Mob) Init(mtype MobType, pos Vector3, index int) {
 // Attempt moving
 func (m *Mob) AttemptMove(v Vector3) {
 	//Applies gravity if no floor underneath
-	if (!OutOfBounds(NewV3(m.pos.x+v.x, m.pos.y+v.y, m.pos.z+v.z)) && GameData.world[m.pos.x+v.x][m.pos.y+v.y][m.pos.z].floor.ftype.index == 0) || GameData.world[m.pos.x][m.pos.y][m.pos.z].floor.ftype.index == 0 {
+	if (!OutOfBounds(NewV3(m.pos.x+v.x, m.pos.y+v.y, m.pos.z+v.z)) && GameData.world[m.pos.x+v.x][m.pos.y+v.y][m.pos.z].floor.ftype.name == "") || GameData.world[m.pos.x][m.pos.y][m.pos.z].floor.ftype.name == "" {
 		v.z = -1
 	}
 	//Nullifies vectors if there are obstacles
-	if OutOfBounds(NewV3(m.pos.x+v.x, m.pos.y+v.y, m.pos.z)) || GameData.world[m.pos.x+v.x][m.pos.y+v.y][m.pos.z].mob != 0 || GameData.world[m.pos.x+v.x][m.pos.y+v.y][m.pos.z].wall.wtype.index != 0 {
+	if OutOfBounds(NewV3(m.pos.x+v.x, m.pos.y+v.y, m.pos.z)) || GameData.world[m.pos.x+v.x][m.pos.y+v.y][m.pos.z].mob != 0 || GameData.world[m.pos.x+v.x][m.pos.y+v.y][m.pos.z].wall.wtype.name != "" {
 		v = NewV3(0, 0, v.z)
 	}
 	//Moves mob if neither of vectors are zero
@@ -190,7 +187,7 @@ func OutOfBounds(v Vector3) bool {
 
 //Check if tile is empty
 func TileEmpty(v Vector3) bool {
-	if GameData.world[v.x][v.y][v.z].floor.ftype.index == 0 && GameData.world[v.x][v.y][v.z].wall.wtype.index == 0 && GameData.world[v.x][v.y][v.z].mob == 0 {
+	if GameData.world[v.x][v.y][v.z].floor.ftype.name == "" && GameData.world[v.x][v.y][v.z].wall.wtype.name == "" && GameData.world[v.x][v.y][v.z].mob == 0 {
 		return true
 	} else {
 		return false

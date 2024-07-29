@@ -17,7 +17,9 @@ func UIDisplayStats() {
 
 // Displays text
 func UIDisplaySymbol(a string, col int, row int) {
-	PrerenderTileBlended(a, sdl.Color{R: 255, G: 255, B: 255}).Blit(nil, Graphic.surface, &sdl.Rect{X: int32((screenAreaWidth + col) * Graphic.charSize.x), Y: int32(row * Graphic.charSize.y), W: 0, H: 0})
+	var prerender = PrerenderTileBlended(a, sdl.Color{R: 255, G: 255, B: 255})
+	prerender.Blit(nil, Graphic.surface, &sdl.Rect{X: int32((screenAreaWidth + col) * Graphic.charSize.x), Y: int32(row * Graphic.charSize.y), W: 0, H: 0})
+	prerender.Free()
 }
 
 // Diplays rune
